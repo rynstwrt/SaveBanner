@@ -1,79 +1,63 @@
 package art.ryanstew.savebanner;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import art.ryanstew.savebanner.util.ConfigManager;
+import art.ryanstew.savebanner.util.GeneralUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
+
 
 public final class SaveBanner extends JavaPlugin
 {
+    private GeneralUtil generalUtil;
+    private ConfigManager configManager;
 
-    private File bannerConfigFile;
-    private FileConfiguration bannerConfig;
 
 
+    /**
+     * Called whenever the plugin is enabling, such as when
+     * the server is starting or finishing reloading.
+     */
     @Override
     public void onEnable()
     {
-        saveDefaultConfig();
-        saveConfig();
-
-        loadBannerConfig();
-//        saveBannerConfig();
+        generalUtil = new GeneralUtil(this);
+        configManager = new ConfigManager(this);
 
         Objects.requireNonNull(getCommand("savebanner")).setExecutor(new SaveBannerCommand(this));
     }
 
 
+
+    /**
+     * Called whenever the plugin is disabling, such as when
+     * the server is stopping or starting reloading.
+     */
     @Override
     public void onDisable() { }
 
 
-    public void loadBannerConfig()
-    {
-        bannerConfigFile = new File(getDataFolder(), "banners.yml");
-        if (!bannerConfigFile.exists())
-        {
-            bannerConfigFile.getParentFile().mkdirs();
-            saveResource("banners.yml", false);
-        }
 
-        bannerConfig = YamlConfiguration.loadConfiguration(bannerConfigFile);
+    /**
+     * Getter method for the GeneralUtil instance.
+     *
+     * @return The GeneralUtil instance.
+     */
+    public GeneralUtil getGeneralUtil()
+    {
+        return generalUtil;
     }
 
 
-    public FileConfiguration getBannerConfig()
+
+    /**
+     * Getter method for the ConfigManager instance.
+     *
+     * @return The ConfigManager instance.
+     */
+    public ConfigManager getConfigManager()
     {
-        return bannerConfig;
-    }
-
-
-    public boolean saveBannerConfig()
-    {
-        try
-        {
-            bannerConfig.save(bannerConfigFile);
-            return true;
-        }
-        catch (IOException err)
-        {
-            err.printStackTrace();
-            return false;
-        }
-    }
-
-
-    public void sendFormattedMessage(CommandSender sender, String message, boolean prefixed)
-    {
-        if (prefixed)
-            message = getConfig().getString("prefix") + message;
-
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+        return configManager;
     }
 
 }
