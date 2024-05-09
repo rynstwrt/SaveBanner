@@ -3,6 +3,7 @@ A minecraft plugin to save and load banners!
 
 Only tested on Minecraft version 1.20.4. Compiled with Java 17.
 
+<br>
 
 ## Commands:
 ```
@@ -18,13 +19,14 @@ Only tested on Minecraft version 1.20.4. Compiled with Java 17.
 - `/banner`
 - `/sb`
 
-
+<br>
 
 ## Permissions:
 ```
 savebanner.use - Permission to use SaveBanner.
 ```
 
+<br>
 
 ## Configuration:
 ### config.yml
@@ -54,6 +56,7 @@ savedBanners:
                   pattern: cre
 ```
 
+<br>
 
 ## Screenshots:
 ![Help menu](assets/screenshots/helpmenu.png)
