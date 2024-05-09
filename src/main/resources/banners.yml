@@ -1,0 +1,15 @@
+# Where banners are stored.
+# It's not recommended to edit this file.
+
+savedBanners:
+    example:
+        ==: org.bukkit.inventory.ItemStack
+        v: 3700
+        type: BLACK_BANNER
+        meta:
+            ==: ItemMeta
+            meta-type: BANNER
+            patterns:
+                - ==: Pattern
+                  color: LIME
+                  pattern: cre

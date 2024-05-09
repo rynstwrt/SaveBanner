@@ -1,39 +1,34 @@
 package art.ryanstew.savebanner;
 
 import com.destroystokyo.paper.MaterialSetTag;
-import com.destroystokyo.paper.MaterialTags;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.block.Banner;
-import org.bukkit.block.banner.Pattern;
-import org.bukkit.block.banner.PatternType;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.material.Colorable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Set;
 
 
 public class SaveBannerCommand implements CommandExecutor
 {
-    private static final String HELP_MESSAGE = new StringBuilder()
-            .append("&7----------------")
-            .append("\n&e&lSaveBanner:")
-            .append("\n&7- &e/savebanner help")
-            .append("\n&7- &e/savebanner list")
-            .append("\n&7- &e/savebanner save <name>")
-            .append("\n&7- &e/savebanner load <name>")
-            .append("\n&7----------------")
-            .toString();
+    private static final String HELP_MESSAGE = """
+
+            &7-----------------------
+            &d&lSaveBanner:
+            &8- &7/banner help
+            &8- &7/banner list
+            &8- &7/banner save <name>
+            &8- &7/banner load <name>
+            &8- &7/banner delete <name>
+            &7-----------------------
+            &r""";
 
     private final SaveBanner plugin;
+
 
 
     public SaveBannerCommand(SaveBanner plugin)
@@ -42,11 +37,13 @@ public class SaveBannerCommand implements CommandExecutor
     }
 
 
+
     private boolean bannerNameExists(String name)
     {
-        ConfigurationSection savedBannersSection = plugin.getConfig().getConfigurationSection("savedBanners");
+        ConfigurationSection savedBannersSection = plugin.getBannerConfig().getConfigurationSection("savedBanners");
         return savedBannersSection != null && savedBannersSection.contains(name.toLowerCase());
     }
+
 
 
     private void saveBanner(Player player, String name)
@@ -65,22 +62,22 @@ public class SaveBannerCommand implements CommandExecutor
             return;
         }
 
-        plugin.sendFormattedMessage(player, "material: " + handItemMaterial.name(), true);
+        ItemStack newItemStack = handItem.clone();
+        newItemStack.setAmount(1);
 
-        BannerMeta bannerMeta = (BannerMeta) handItem.getItemMeta();
-        List<Pattern> patterns = bannerMeta.getPatterns();
-        for (Pattern pattern : patterns)
+        String path = String.format("savedBanners.%s", name.toLowerCase());
+        plugin.getBannerConfig().set(path, newItemStack);
+        boolean saveSuccess = plugin.saveBannerConfig();
+
+        if (!saveSuccess)
         {
-            PatternType type = pattern.getPattern();
-            DyeColor color = pattern.getColor();
-            plugin.sendFormattedMessage(player, type.toString(), true);
-            plugin.sendFormattedMessage(player, color.name(), true);
+            plugin.sendFormattedMessage(player, "&cFailed to save the config file!", true);
+            return;
         }
 
-        plugin.getConfig().set(String.format("savedBanners.%s.material", name.toLowerCase()), handItemMaterial.name());
-        plugin.getConfig().set(String.format("savedBanners.%s.patterns", name.toLowerCase()), patterns);
-        plugin.saveConfig();
+        plugin.sendFormattedMessage(player, String.format("&aSuccessfully saved banner named %s!", name), true);
     }
+
 
 
     private void loadBanner(Player player, String name)
@@ -91,24 +88,41 @@ public class SaveBannerCommand implements CommandExecutor
             return;
         }
 
-        ConfigurationSection section = plugin.getConfig().getConfigurationSection(String.format("savedBanners.%s", name.toLowerCase()));
-        String bannerMaterialName = section.getString("material");
-        ItemStack itemStack = new ItemStack(Material.getMaterial(bannerMaterialName));
-        plugin.sendFormattedMessage(player, itemStack.toString(), true);
+        String path = String.format("savedBanners.%s", name.toLowerCase());
+        ItemStack itemStack = plugin.getBannerConfig().getItemStack(path);
 
-        List<Pattern> patternList = (List<Pattern>) section.getList("patterns");
-        for (Pattern pat : patternList)
+        if (itemStack == null)
         {
-            plugin.sendFormattedMessage(player, pat.getColor().name(), true);
-            plugin.sendFormattedMessage(player, pat.getPattern().name(), true);
+            plugin.sendFormattedMessage(player, "&cCould not load that banner!", true);
+            return;
         }
 
-        BannerMeta meta = (BannerMeta) itemStack.getItemMeta();
-        meta.setPatterns(patternList);
-        itemStack.setItemMeta(meta);
-
         player.getInventory().addItem(itemStack);
+        plugin.sendFormattedMessage(player, String.format("&aSuccessfully loaded banner named %s!", name), true);
     }
+
+
+
+    private void deleteBanner(CommandSender sender, String name)
+    {
+        if (!bannerNameExists(name))
+        {
+            plugin.sendFormattedMessage(sender, "&cNo banner with that name exists!", true);
+            return;
+        }
+
+        String path = String.format("savedBanners.%s", name.toLowerCase());
+        plugin.getBannerConfig().set(path, null);
+        boolean saveSuccess = plugin.saveBannerConfig();
+
+        if (!saveSuccess)
+        {
+            plugin.sendFormattedMessage(sender, "&cFailed to save the config file!", true);
+        }
+
+        plugin.sendFormattedMessage(sender, String.format("&aSuccessfully deleted banner named %s!", name), true);
+    }
+
 
 
     /*
@@ -117,6 +131,8 @@ public class SaveBannerCommand implements CommandExecutor
         /savebanner list
         /savebanner save <name>
         /savebanner load <name>
+        /savebanner delete <name>
+        /savebanner reload
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args)
@@ -129,10 +145,57 @@ public class SaveBannerCommand implements CommandExecutor
         }
 
 
+        // RELOAD COMMAND
+        if (args[0].equalsIgnoreCase("reload"))
+        {
+            plugin.reloadConfig();
+            plugin.saveConfig();
+
+            plugin.loadBannerConfig();
+            boolean saveSuccess = plugin.saveBannerConfig();
+            if (!saveSuccess)
+            {
+                plugin.sendFormattedMessage(sender, "&cFailed to reload the banner config!", true);
+                return true;
+            }
+
+            plugin.sendFormattedMessage(sender, "&aSuccessfully reloaded the config!", true);
+            return true;
+        }
+
+
         // LIST COMMAND
         if (args[0].equalsIgnoreCase("list"))
         {
-            plugin.sendFormattedMessage(sender, "&eList:", false);
+            ConfigurationSection configSection = plugin.getBannerConfig().getConfigurationSection("savedBanners");
+            if (configSection == null)
+            {
+                plugin.sendFormattedMessage(sender, "&cThere are no saved banners!", true);
+                return true;
+            }
+
+            Set<String> keys = configSection.getKeys(false);
+            if (keys.isEmpty())
+            {
+                plugin.sendFormattedMessage(sender, "&cThere are no saved banners!", true);
+                return true;
+            }
+
+            String message = "&fSaved banners:\n&8- &7" + String.join("\n&8- &7", keys);
+            plugin.sendFormattedMessage(sender, message, true);
+            return true;
+        }
+
+
+        if (args[0].equalsIgnoreCase("delete"))
+        {
+            if (args.length != 2)
+            {
+                plugin.sendFormattedMessage(sender, HELP_MESSAGE, false);
+                return true;
+            }
+
+            deleteBanner(sender, args[1]);
             return true;
         }
 
@@ -140,13 +203,11 @@ public class SaveBannerCommand implements CommandExecutor
         // SAVE/LOAD COMMANDS
         if (args[0].equalsIgnoreCase("save") || args[0].equalsIgnoreCase("load"))
         {
-            if (!(sender instanceof Player))
+            if (!(sender instanceof Player player))
             {
                 plugin.sendFormattedMessage(sender, "&cOnly players can run this command!", true);
                 return true;
             }
-
-            Player player = (Player) sender;
 
             if (args.length != 2)
             {
@@ -154,11 +215,10 @@ public class SaveBannerCommand implements CommandExecutor
                 return true;
             }
 
-            String name = args[1];
             if (args[0].equalsIgnoreCase("save"))
-                saveBanner(player, name);
+                saveBanner(player, args[1]);
             else
-                loadBanner(player, name);
+                loadBanner(player, args[1]);
 
             return true;
         }
@@ -167,43 +227,5 @@ public class SaveBannerCommand implements CommandExecutor
         // HELP MESSAGE
         plugin.sendFormattedMessage(sender, HELP_MESSAGE, false);
         return true;
-
-
-//        // SAVE/LOAD COMMAND
-//        boolean isSaveCommand = args[0].equalsIgnoreCase("save");
-//        boolean isLoadCommand = args[0].equalsIgnoreCase("load");
-//
-//        if (!isSaveCommand && !isLoadCommand)
-//        {
-//            plugin.sendFormattedMessage(sender, HELP_MESSAGE, false);
-//            return true;
-//        }
-//
-//        if (!(sender instanceof Player))
-//        {
-//            plugin.sendFormattedMessage(sender, "&cOnly players can run this command!", true);
-//            return true;
-//        }
-//
-//        Player player = (Player) sender;
-//
-//        if (args.length != 2)
-//        {
-//            plugin.sendFormattedMessage(player, HELP_MESSAGE, false);
-//            return true;
-//        }
-//
-//        if (isSaveCommand)
-//        {
-//            saveBanner(player, args[1]);
-//            return true;
-//        }
-//
-//        if (isLoadCommand)
-//        {
-//            loadBanner(player, args[1]);
-//        }
-//
-//        return false;
     }
 }
