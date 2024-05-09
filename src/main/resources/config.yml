@@ -1,0 +1,11 @@
+# The prefix of the plugin.
+# Should end in a space.
+prefix: "&7[&eSaveBanner&7]&r "
+
+
+# The saved banners.
+# DO NOT REMOVE
+savedBanners:
+    banner_name:
+        material: WHITE_BANNER
+        patterns:

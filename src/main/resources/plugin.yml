@@ -1,0 +1,17 @@
+name: SaveBanner
+version: '${version}'
+main: art.ryanstew.savebanner.SaveBanner
+api-version: '1.20'
+author: RuntimeRyn
+prefix: SaveBanner
+
+commands:
+    savebanner:
+        description: The main command of SaveBanner!
+        aliases: [banner, sb]
+        permission: savebanner.use
+
+permissions:
+    savebanner.use:
+        description: Permission to use /savebanner.
+        default: op
