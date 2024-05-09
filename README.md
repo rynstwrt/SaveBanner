@@ -3,6 +3,8 @@ A minecraft plugin to save and load banners!
 
 Only tested on Minecraft version 1.20.4. Compiled with Java 17.
 
+https://www.spigotmc.org/resources/savebanner.116709/
+
 <br>
 
 ## Commands:
