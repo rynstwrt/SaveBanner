@@ -66,3 +66,13 @@ savedBanners:
 ![Saved banner list](assets/screenshots/savedbannerlist.png)
 
 ![Load banner message](assets/screenshots/loadbanner.png)
+
+<br>
+
+# Created for FoxCraft!
+#### Welcome to your next Minecraft server! FoxCraft is a small but growing community of mature players. We have custom enchantments and custom-made plugins. We focus primarily on economy survival but also have creative.
+
+#### Besides the game modes, we offer a balanced economy/shop, vote crates, and awesome time-based ranks. Ranking up unlocks awesome perks like /treefeller, /god, /glow, and /skull.
+### What are you waiting for? Join today!
+
+![FoxCraft banner](assets/banners/foxcraftbanner.gif)
