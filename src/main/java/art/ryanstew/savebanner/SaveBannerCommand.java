@@ -64,7 +64,8 @@ public class SaveBannerCommand implements CommandExecutor
         }
 
         Set<String> pageEntries = commandUtil.getPageOfBannerList(keys, BANNER_LIST_HEIGHT, page);
-        StringBuilder message = new StringBuilder(String.format("&8-------- &dSaved Banners &f(page %d/%d)&8 --------\n&8- &7", page, totalPages) + String.join("\n&8- &7", pageEntries));
+        String colorCode = plugin.getConfig().getString("accent-color-code");
+        StringBuilder message = new StringBuilder(String.format("&8-------- %sSaved Banners &f(page %d/%d)&8 --------\n&8- &7", colorCode, page, totalPages) + String.join("\n&8- &7", pageEntries));
 
         int neededLines = BANNER_LIST_HEIGHT - pageEntries.size();
         for (int i = 0; i < neededLines; ++i)

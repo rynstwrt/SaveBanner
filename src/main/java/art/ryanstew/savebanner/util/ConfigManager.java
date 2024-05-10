@@ -22,7 +22,9 @@ public class ConfigManager
     {
         this.plugin = plugin;
 
+        plugin.saveDefaultConfig();
         plugin.saveConfig();
+
         loadBannerConfig();
         saveBannerConfig();
     }
@@ -88,6 +90,8 @@ public class ConfigManager
     public boolean reloadConfigs()
     {
         plugin.reloadConfig();
+        plugin.saveConfig();
+
         loadBannerConfig();
         return saveBannerConfig();
     }

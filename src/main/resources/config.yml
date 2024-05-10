@@ -2,4 +2,4 @@
 prefix: '&7[&dSaveBanner&7]&r '
 
 # The color of the "Saved Banners" text when /banner list is ran.
-accent-color: '&e'
+accent-color-code: '&e'
