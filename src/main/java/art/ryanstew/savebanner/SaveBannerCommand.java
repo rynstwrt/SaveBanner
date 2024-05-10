@@ -18,7 +18,7 @@ import java.util.Set;
 public class SaveBannerCommand implements CommandExecutor
 {
 
-    private static final int MAX_LIST_PAGE_ITEMS = 7;
+    private static final int BANNER_LIST_HEIGHT = 9;
 
     private final SaveBanner plugin;
     private final CommandUtil commandUtil;
@@ -45,21 +45,32 @@ public class SaveBannerCommand implements CommandExecutor
         ConfigurationSection configSection = plugin.getConfigManager().getBannerConfig().getConfigurationSection("savedBanners");
         if (configSection == null)
         {
-            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThere are no saved banners!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThere are no saved banners!", true);
             return;
         }
 
         Set<String> keys = configSection.getKeys(false);
         if (keys.isEmpty())
         {
-            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThere are no saved banners!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThere are no saved banners!", true);
             return;
         }
 
-        Set<String> pageEntries = commandUtil.getPageOfBannerList(keys, page);
+        int totalPages = (int) Math.ceil((double) keys.size() / BANNER_LIST_HEIGHT);
+        if (page > totalPages)
+        {
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThe page number you entered is not valid!", true);
+            return;
+        }
 
-        String message = "&fSaved banners:\n&8- &7" + String.join("\n&8- &7", pageEntries);
-        plugin.getGeneralUtil().sendFormattedMessage(sender, message, true, true);
+        Set<String> pageEntries = commandUtil.getPageOfBannerList(keys, BANNER_LIST_HEIGHT, page);
+        StringBuilder message = new StringBuilder(String.format("&8-------- &dSaved Banners &f(page %d/%d)&8 --------\n&8- &7", page, totalPages) + String.join("\n&8- &7", pageEntries));
+
+        int neededLines = BANNER_LIST_HEIGHT - pageEntries.size();
+        for (int i = 0; i < neededLines; ++i)
+            message.append("\n&r");
+
+        plugin.getGeneralUtil().sendFormattedMessage(sender, message.toString(), false);
     }
 
 
@@ -75,7 +86,7 @@ public class SaveBannerCommand implements CommandExecutor
     {
         if (commandUtil.bannerNameExists(name))
         {
-            plugin.getGeneralUtil().sendFormattedMessage(player, "&cA banner with that name already exists!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(player, "&cA banner with that name already exists!", true);
             return;
         }
 
@@ -83,7 +94,7 @@ public class SaveBannerCommand implements CommandExecutor
         Material handItemMaterial = handItem.getType();
         if (!MaterialSetTag.BANNERS.isTagged(handItemMaterial))
         {
-            plugin.getGeneralUtil().sendFormattedMessage(player, "&cYou are not holding a banner!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(player, "&cYou are not holding a banner!", true);
             return;
         }
 
@@ -96,11 +107,11 @@ public class SaveBannerCommand implements CommandExecutor
 
         if (!saveSuccess)
         {
-            plugin.getGeneralUtil().sendFormattedMessage(player, "&cFailed to save the config file!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(player, "&cFailed to save the config file!", true);
             return;
         }
 
-        plugin.getGeneralUtil().sendFormattedMessage(player, String.format("&aSuccessfully saved banner named %s!", name), true, false);
+        plugin.getGeneralUtil().sendFormattedMessage(player, String.format("&aSuccessfully saved banner named %s!", name), true);
     }
 
 
@@ -116,7 +127,7 @@ public class SaveBannerCommand implements CommandExecutor
     {
         if (!commandUtil.bannerNameExists(name))
         {
-            plugin.getGeneralUtil().sendFormattedMessage(player, "&cNo banner with that name exists!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(player, "&cNo banner with that name exists!", true);
             return;
         }
 
@@ -125,12 +136,12 @@ public class SaveBannerCommand implements CommandExecutor
 
         if (itemStack == null)
         {
-            plugin.getGeneralUtil().sendFormattedMessage(player, "&cCould not load that banner!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(player, "&cCould not load that banner!", true);
             return;
         }
 
         player.getInventory().addItem(itemStack);
-        plugin.getGeneralUtil().sendFormattedMessage(player, String.format("&aSuccessfully loaded banner named %s!", name), true, false);
+        plugin.getGeneralUtil().sendFormattedMessage(player, String.format("&aSuccessfully loaded banner named %s!", name), true);
     }
 
 
@@ -145,7 +156,7 @@ public class SaveBannerCommand implements CommandExecutor
     {
         if (!commandUtil.bannerNameExists(name))
         {
-            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cNo banner with that name exists!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cNo banner with that name exists!", true);
             return;
         }
 
@@ -155,10 +166,10 @@ public class SaveBannerCommand implements CommandExecutor
 
         if (!saveSuccess)
         {
-            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cFailed to save the config file!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&cFailed to save the config file!", true);
         }
 
-        plugin.getGeneralUtil().sendFormattedMessage(sender, String.format("&aSuccessfully deleted banner named %s!", name), true, false);
+        plugin.getGeneralUtil().sendFormattedMessage(sender, String.format("&aSuccessfully deleted banner named %s!", name), true);
     }
 
 
@@ -201,11 +212,11 @@ public class SaveBannerCommand implements CommandExecutor
             boolean saveSuccess = plugin.getConfigManager().reloadConfigs();
             if (!saveSuccess)
             {
-                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cFailed to reload the banner config!", true, false);
+                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cFailed to reload the banner config!", true);
                 return true;
             }
 
-            plugin.getGeneralUtil().sendFormattedMessage(sender, "&aSuccessfully reloaded the config!", true, false);
+            plugin.getGeneralUtil().sendFormattedMessage(sender, "&aSuccessfully reloaded the config!", true);
             return true;
         }
 
@@ -216,9 +227,9 @@ public class SaveBannerCommand implements CommandExecutor
             if (args.length == 2)
             {
                 int pageNumber = commandUtil.getListPageIntegerFromArgument(args[1]);
-                if (pageNumber == -1)
+                if (pageNumber < 1)  // includes -1
                 {
-                    plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThe page number you entered is not valid!", true, false);
+                    plugin.getGeneralUtil().sendFormattedMessage(sender, "&cThe page number you entered is not valid!", true);
                     return true;
                 }
 
@@ -226,7 +237,7 @@ public class SaveBannerCommand implements CommandExecutor
             }
             else
             {
-                sendBannerList(sender, 0);
+                sendBannerList(sender, 1);
             }
 
             return true;
@@ -238,7 +249,7 @@ public class SaveBannerCommand implements CommandExecutor
         {
             if (args.length != 2)
             {
-                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cYou did not specify the name of the banner to delete!", true, false);
+                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cYou did not specify the name of the banner to delete!", true);
                 return true;
             }
 
@@ -254,7 +265,7 @@ public class SaveBannerCommand implements CommandExecutor
         {
             if (!(sender instanceof Player player))
             {
-                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cOnly players can run this command!", true, false);
+                plugin.getGeneralUtil().sendFormattedMessage(sender, "&cOnly players can run this command!", true);
                 return true;
             }
 
@@ -263,7 +274,7 @@ public class SaveBannerCommand implements CommandExecutor
                 String errorMessage = isSaveCommand ?
                         "&cYou did not specify the name of the banner to save!" :
                         "&cYou did not specify the name of the banner to load!";
-                plugin.getGeneralUtil().sendFormattedMessage(sender, errorMessage, true, false);
+                plugin.getGeneralUtil().sendFormattedMessage(sender, errorMessage, true);
                 return true;
             }
 

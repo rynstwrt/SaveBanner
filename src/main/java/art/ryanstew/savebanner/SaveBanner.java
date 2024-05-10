@@ -34,7 +34,9 @@ public final class SaveBanner extends JavaPlugin
      * the server is stopping or starting reloading.
      */
     @Override
-    public void onDisable() { }
+    public void onDisable()
+    {
+    }
 
 
 

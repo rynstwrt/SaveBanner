@@ -4,6 +4,9 @@ import art.ryanstew.savebanner.SaveBanner;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -20,15 +23,16 @@ public class CommandUtil
 
         helpMessage =
             """
-            &7-----------------------
+            
+            &8------------------------------------
             %s&8:
             &8- &7/banner help
             &8- &7/banner list
             &8- &7/banner save <name>
             &8- &7/banner load <name>
             &8- &7/banner delete <name>
-            &7-----------------------
-            """.formatted(plugin.getConfig().get("prefix"));
+            &8------------------------------------
+            &r""".formatted(plugin.getConfigManager().getGeneralConfig().get("prefix"));
     }
 
 
@@ -40,7 +44,7 @@ public class CommandUtil
      */
     public void sendHelpMessage(CommandSender sender)
     {
-        plugin.getGeneralUtil().sendFormattedMessage(sender, helpMessage, false, true);
+        plugin.getGeneralUtil().sendFormattedMessage(sender, helpMessage, false);
     }
 
 
@@ -88,8 +92,23 @@ public class CommandUtil
      * @param page The page to get.
      * @return A set of strings that are the banner list entries for that page.
      */
-    public Set<String> getPageOfBannerList(Set<String> entries, int page)
+    public Set<String> getPageOfBannerList(Set<String> entries, int numEntriesPerPage, int page)
     {
-        return entries;
+        int startIndex = (page - 1) * numEntriesPerPage;
+        int stopIndex = startIndex + numEntriesPerPage;
+
+        List<String> allEntries = new ArrayList<>(entries);
+        int numEntries = allEntries.size();
+
+        Set<String> pageEntries = new LinkedHashSet<>();
+        for (int i = startIndex; i < stopIndex; ++i)
+        {
+            if (i == numEntries)
+                break;
+
+            pageEntries.add(allEntries.get(i));
+        }
+
+        return pageEntries;
     }
 }
