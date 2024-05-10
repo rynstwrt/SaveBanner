@@ -27,7 +27,7 @@ public class GeneralUtil
     public void sendFormattedMessage(CommandSender sender, String message, boolean prefixed)
     {
         if (prefixed)
-            message = plugin.getConfigManager().getGeneralConfig().getString("prefix") + message;
+            message = plugin.getConfig().getString("prefix") + message;
 
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }

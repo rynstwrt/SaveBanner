@@ -1,6 +1,5 @@
 # Where banners are stored.
 # It's not recommended to edit this file.
-
 savedBanners:
     example:
         ==: org.bukkit.inventory.ItemStack

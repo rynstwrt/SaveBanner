@@ -1,2 +1,5 @@
 # The prefix of the plugin. Should end with "&r ".
-prefix: "&7[&dSaveBanner&7]&r "
+prefix: '&7[&dSaveBanner&7]&r '
+
+# The color of the "Saved Banners" text when /banner list is ran.
+accent-color: '&e'

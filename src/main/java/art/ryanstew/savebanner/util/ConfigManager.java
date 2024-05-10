@@ -13,9 +13,6 @@ public class ConfigManager
 
     private final SaveBanner plugin;
 
-    private File generalConfigFile;
-    private FileConfiguration generalConfig;
-
     private File bannerConfigFile;
     private FileConfiguration bannerConfig;
 
@@ -25,62 +22,9 @@ public class ConfigManager
     {
         this.plugin = plugin;
 
-        loadGeneralConfig();
-        saveGeneralConfig();
-
+        plugin.saveConfig();
         loadBannerConfig();
         saveBannerConfig();
-    }
-
-
-
-    /**
-     * Loads the banner config file and config. Creates
-     * the file if it does not already exist.
-     */
-    public void loadGeneralConfig()
-    {
-        generalConfigFile = new File(plugin.getDataFolder(), "config.yml");
-        if (!generalConfigFile.exists())
-        {
-            generalConfigFile.getParentFile().mkdirs();
-            plugin.saveResource("config.yml", false);
-        }
-
-        generalConfig = YamlConfiguration.loadConfiguration(generalConfigFile);
-    }
-
-
-
-    /**
-     * Getter method for the banner config.
-     *
-     * @return The banner config FileConfiguration instance.
-     */
-    public FileConfiguration getGeneralConfig()
-    {
-        return generalConfig;
-    }
-
-
-
-    /**
-     * Saves the general config.
-     *
-     * @return True if save successful, false if not.
-     */
-    public boolean saveGeneralConfig()
-    {
-        try
-        {
-            generalConfig.save(generalConfigFile);
-            return true;
-        }
-        catch (IOException err)
-        {
-            err.printStackTrace();
-            return false;
-        }
     }
 
 
@@ -143,12 +87,8 @@ public class ConfigManager
      */
     public boolean reloadConfigs()
     {
-        loadGeneralConfig();
-        boolean generalSuccess = saveGeneralConfig();
-
+        plugin.reloadConfig();
         loadBannerConfig();
-        boolean bannerSuccess = saveBannerConfig();
-
-        return generalSuccess && bannerSuccess;
+        return saveBannerConfig();
     }
 }

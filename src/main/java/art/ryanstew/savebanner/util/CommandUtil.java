@@ -32,7 +32,7 @@ public class CommandUtil
             &8- &7/banner load <name>
             &8- &7/banner delete <name>
             &8------------------------------------
-            &r""".formatted(plugin.getConfigManager().getGeneralConfig().get("prefix"));
+            &r""".formatted(plugin.getConfig().get("prefix"));
     }
 
 
