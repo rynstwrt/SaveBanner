@@ -23,6 +23,7 @@ public class ConfigManager
         this.plugin = plugin;
 
         plugin.saveDefaultConfig();
+        plugin.getConfig().options().copyDefaults(true);
         plugin.saveConfig();
 
         loadBannerConfig();

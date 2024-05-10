@@ -4,10 +4,7 @@ import art.ryanstew.savebanner.SaveBanner;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class CommandUtil
@@ -32,7 +29,7 @@ public class CommandUtil
             &8- &7/banner load <name>
             &8- &7/banner delete <name>
             &8------------------------------------
-            &r""".formatted(plugin.getConfig().get("prefix"));
+            &r""".formatted(Objects.requireNonNull(plugin.getConfig().getString("prefix")).trim());
     }
 
 
